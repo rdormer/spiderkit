@@ -15,10 +15,10 @@ module Spider
     attr_accessor :robot_txt
 
     def initialize(robots=nil, agent=nil, finish=nil)
-      @visited = BloomFilter.new(size: 10_000, error_rate: 0.001)
       @robot_txt = ExclusionParser.new(robots, agent) if robots
       @finalize = finish
       @visit_count = 0
+      clear_visited
       @pending = []
     end 
 
@@ -56,6 +56,10 @@ module Spider
 
     def stop
       raise IterationExit
+    end
+
+    def clear_visited
+      @visited = BloomFilter.new(size: 10_000, error_rate: 0.001)
     end
   
     private

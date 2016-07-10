@@ -124,6 +124,25 @@ REND
       expect(queue.visit_count).to eq 1
       expect(flag).to be true
     end
+
+    it 'should allow you to clear the visited list' do
+      @queue.push_front(%w(one two three))
+      order = get_visit_order(@queue)
+      expect(order).to eq %w(three two one divider)
+      expect(@queue.visit_count).to eq 4
+
+      @queue.push_front(%w(one two three))     
+      order = get_visit_order(@queue)
+      expect(order).to be_empty
+      expect(@queue.visit_count).to eq 4
+
+      @queue.clear_visited    
+      @queue.push_front(%w(one two three))
+      order = get_visit_order(@queue)
+      expect(order).to eq %w(three two one)
+      expect(@queue.visit_count).to eq 7 
+    end
+
   end
 
 end
