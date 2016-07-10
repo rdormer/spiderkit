@@ -5,7 +5,6 @@
 $: << File.dirname(__FILE__)
 require 'wait_time'
 require 'exclusion'
-require 'urltree'
 require 'version'
 require 'queue'
 
