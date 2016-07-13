@@ -46,6 +46,11 @@ module Spider
       add_url(urls) {|u| @pending.unshift(u)}
     end 
 
+    def mark(urls)
+      urls = [urls] unless urls.is_a? Array
+      urls.each {|u| @visited.insert(u)}
+    end
+
     def size
       @pending.size
     end

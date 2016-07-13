@@ -145,6 +145,8 @@ Googlebot/2.1 (+http://www.google.com/bot.html)
 
 should respond to "googlebot" in robots.txt.  By convention, bots and spiders usually have the name 'bot' somewhere in their user agent strings. 
 
+Finally, as a sanity check / to avoid DoS honeypots with malicious robots.txt files, the exclusion parser will process a maximum of one thousand non-whitespace lines before stopping. 
+
 ## Wait Time
 
 Ideally a bot should wait for some period of time in between requests to avoid crashing websites (less likely) or being blacklisted (more likely).  A WaitTime class is provided that encapsulates this waiting logic, and logic to respond to rate limit codes and the "crawl-delay" directives found in some robots.txt files.  Times are in seconds.
