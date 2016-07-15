@@ -31,7 +31,6 @@ module Spider
       expect(order).to eq %w(one two divider)
     end
 
-
     it 'should allow appending to the back of the queue' do
       @queue.push_back('one')
       @queue.push_back('two')
@@ -84,6 +83,13 @@ module Spider
       @queue.push_back(%w(divider divider))
       @queue.push_front(%w(divider divider))
       expect(@queue.empty?).to be true
+    end
+
+    it 'should not insert urls already in the pending queue' do
+      @queue.push_back(%w(one two three))
+      expect(@queue.size).to eq 4
+      @queue.push_back(%w(one two three))    
+      expect(@queue.size).to eq 4
     end
 
     it 'should track number of urls visited' do

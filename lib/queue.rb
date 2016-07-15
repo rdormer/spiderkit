@@ -75,7 +75,7 @@ module Spider
       urls.compact!
   
       urls.each do |url|
-        unless @visited.include?(url)
+        unless @visited.include?(url) || @pending.include?(url)
           yield url
         end 
       end
