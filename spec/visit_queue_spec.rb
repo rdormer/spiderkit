@@ -14,7 +14,6 @@ def get_visit_order(q)
   order
 end
 
-
 module Spider
 
   describe VisitQueue do
@@ -125,7 +124,7 @@ REND
       flag = false
       final = Proc.new { flag = true }
       queue = described_class.new(nil, nil, final)
-      queue.push_back((1..20).to_a)
+      queue.push_back(%w(1 2 3 4 5 6 7 8))
       queue.visit_each { queue.stop if queue.visit_count >= 1 }
       expect(queue.visit_count).to eq 1
       expect(flag).to be true
@@ -149,6 +148,19 @@ REND
       expect(@queue.visit_count).to eq 7 
     end
 
+    it 'should not be affected by modification of url argument' do
+      @queue.push_front(%w(one three))
+
+      @queue.visit_each do |url|
+        url.gsub! /e/, '@' 
+      end
+
+      expect(@queue.url_okay('one')).to be false
+      expect(@queue.url_okay('three')).to be false
+
+      expect(@queue.url_okay('on@')).to be true
+      expect(@queue.url_okay('thr@@')).to be true
+    end
   end
 
 end

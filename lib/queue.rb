@@ -9,8 +9,8 @@ module Spider
 
   class VisitQueue
  
-    class IterationExit < Exception; end
-
+    IterationExit = Class.new(Exception)
+   
     attr_accessor :visit_count
     attr_accessor :robot_txt
 
@@ -27,7 +27,7 @@ module Spider
         until @pending.empty?
           url = @pending.pop
           if url_okay(url) 
-            yield url if block_given?
+            yield url.clone if block_given?
             @visited.insert(url)
             @visit_count += 1
           end
@@ -67,14 +67,14 @@ module Spider
       @visited = BloomFilter.new(size: 10_000, error_rate: 0.001)
     end
   
-    private
-
     def url_okay(url)
       return false if @visited.include?(url)
       return false if @robot_txt && @robot_txt.excluded?(url)
       true
     end
   
+    private
+
     def add_url(urls)
       urls = [urls] unless urls.is_a? Array
       urls.compact!
