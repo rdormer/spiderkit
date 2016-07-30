@@ -104,8 +104,9 @@ module Spider
       config = {}
   
       text.gsub!("\r", "\n")
-      text.gsub!("\xEF\xBB\xBF".force_encoding("ASCII-8BIT"), '')
-  
+      text = text.force_encoding("UTF-8")
+      text.gsub!("\xEF\xBB\xBF".force_encoding("UTF-8"), '')
+
       text.each_line do |line|
         line.lstrip!
         line.rstrip!
