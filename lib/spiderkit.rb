@@ -5,9 +5,11 @@
 $: << File.dirname(__FILE__)
 require 'wait_time'
 require 'exclusion'
+require 'recorder'
 require 'version'
 require 'queue'
 
 class String
   attr_accessor :http_status
+  attr_accessor :http_headers
 end

@@ -58,8 +58,8 @@ end
 A slightly fancier example:
 
 ```ruby
-#download robots.txt as variable txt
-#user agent for robots.txt is "my-bot"
+# download robots.txt as variable txt
+# user agent for robots.txt is "my-bot"
 
 finalizer = Proc.new { puts "done"}
 mybot = Spider::VisitQueue.new(txt, "my-bot", finalizer)
@@ -69,10 +69,10 @@ As urls are fetched and added to the queue, any links already visited will be dr
 
 ```ruby
 mybot.visit_each do |url|
-  #these will be visited next
+  # these will be visited next
   mybot.push_front(nexturls)
 
-  #these will be visited last
+  # these will be visited last
   mybot.push_back(lasturls)
 end
 ```
@@ -104,16 +104,16 @@ The finalizer, if any, will still be executed after stopping iteration.
 Spiderkit also includes a robots.txt parser that can either work standalone, or be passed as an argument to the visit queue.  If passed as an argument, urls that are excluded by the robots.txt will be dropped transparently.
 
 ```
-#fetch robots.txt as variable txt
+# fetch robots.txt as variable txt
 
-#create a stand alone parser
+# create a stand alone parser
 robots_txt = Spider::ExclusionParser.new(txt)
 
 robots_txt.excluded?("/") => true
 robots_txt.excluded?("/admin") => false
 robots_txt.allowed?("/blog") => true
 
-#pass text directly to visit queue
+# pass text directly to visit queue
 mybot = Spider::VisitQueue(txt)
 ```
 
@@ -121,7 +121,7 @@ Note that you pass the robots.txt directly to the visit queue - no need to new u
 
 ```ruby
 mybot.visit_each |url|
-  #download a new robots.txt from somewhere
+  #d ownload a new robots.txt from somewhere
   mybot.robot_txt = Spider::ExclusionParser.new(txt)
 end
 ``` 
@@ -129,8 +129,8 @@ end
 If you don't pass an agent string, then the parser will take it's configuration from the default agent specified in the robots.txt.  If you want your bot to respond to directives for a given user agent, just pass the agent to either the queue when you create it, or the parser:
 
 ```ruby
-#visit queue that will respond to any robots.txt
-#with User-agent: mybot in them
+# visit queue that will respond to any robots.txt
+# with User-agent: mybot in them
 mybot = Spider::VisitQueue(txt, 'mybot')
 
 #same thing as a standalone parser
@@ -154,29 +154,65 @@ Ideally a bot should wait for some period of time in between requests to avoid c
 You can create it standalone, or get it from an exclusion parser:
 
 ```ruby
-#download a robots.txt with a crawl-delay 40
+# download a robots.txt with a crawl-delay 40
 
 robots_txt = Spider::ExclusionParser.new(txt)
 delay = robots_txt.wait_time
 delay.value => 40
 
-#receive a rate limit code, double wait time
+# receive a rate limit code, double wait time
 delay.back_off
 
-#actually do the waiting part
+# actually do the waiting part
 delay.wait
 
-#in response to some rate limit codes you'll want
-#to sleep for a while, then back off
+# in response to some rate limit codes you'll want
+# to sleep for a while, then back off
 delay.reduce_wait
 
 
-#after one call to back_off and one call to reduce_wait
+# after one call to back_off and one call to reduce_wait
 delay.value => 160
 ```
 
 By default a WaitTime will specify an initial value of 2 seconds.  You can pass a value to new to specify the wait seconds, although values larger than the max allowable value will be set to the max allowable value (3 minutes / 180 seconds).
 
+## Recording Requests
+
+For convenience, an HTTP request recorder is provided, and is highly useful for helping write regression and integration tests.  It accepts a block of code that returns a string containing the response data.  The String class is monkey-patched to add http_status and http_headers accessors for ease of transporting other request data (yes, I know, monkey patching is evil).  Information assigned to these accessors will be saved as well by the recorder, but their use is not required.  The recorder class will manage the marshaling and unmarshaling of the request data behind the scenes, saving requests identified by their URL as a uniquely hashed file name with YAML-ized and Base64 encoded data in it.  This is similar to VCR, and you can certainly use that instead.  However, I personally ran into some troubles integrating it into some spiders I was writing, so I came up with this as a simple, lightweight alternative that works well with the rest of the Spiderkit.
+
+The recorder will not play back request data unless enabled, and it will not save request data unless recording is turned on.  This is done with the **activate!** and **record!** methods, respectively.  You can stop recording with the **pause!** method and stop playback with the **deactivate!** method.
+
+A simple spider for iterating pages and recording them might look like this:
+
+```ruby
+require 'spiderkit'
+require 'open-uri'
+
+mybot = Spider::VisitQueue.new
+mybot.push_front('http://someurl.com')
+
+Spider::VisitRecorder.config('/save/path')
+Spider::VisitRecorder.activate!
+Spider::VisitRecorder.record!
+
+mybot.visit_each do |url|
+
+  data = Spider::VisitRecorder.recall(url) do
+    puts "fetch #{url}"
+    open(url).read
+  end
+ 
+  # extract links from data and push onto the
+  # spider queue
+end
+```
+
+After the first time the pages are spidered and saved, any subsequent run would simply replay the recorded data.  You would find the saved request files in the working directory.  The path that requests are saved to can be altered using the **config** method:
+
+```ruby
+Spider::VisitRecorder.config('/some/test/path')
+```
  
 ## Contributing
 
