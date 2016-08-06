@@ -120,8 +120,10 @@ mybot = Spider::VisitQueue(txt)
 Note that you pass the robots.txt directly to the visit queue - no need to new up the parser yourself.  The VisitQueue also has a robots_txt accessor that you can use to access and set the exclusion parser while iterating through the queue:
 
 ```ruby
+require 'open-uri'
+
 mybot.visit_each |url|
-  #d ownload a new robots.txt from somewhere
+  txt = open('http://wikipedia.org/robots.txt').read
   mybot.robot_txt = Spider::ExclusionParser.new(txt)
 end
 ``` 
@@ -137,13 +139,21 @@ mybot = Spider::VisitQueue(txt, 'mybot')
 myparser = Spider::ExclusionParser.new(txt, 'mybot')
 ```
 
-Note that user agent string passed in to your exclusion parser and the user agent string sent along with HTTP requests are not necessarily one and the same, although the user agent contained in robots.txt will usually be a subset of the HTTP user agent.
+You can also pass nil or a blank string as the agent to use the default agent.  Note that user agent string passed in to your exclusion parser and the user agent string sent along with HTTP requests are not necessarily one and the same, although the user agent contained in robots.txt will usually be a subset of the HTTP user agent.
 
 For example:
 
 Googlebot/2.1 (+http://www.google.com/bot.html)
 
-should respond to "googlebot" in robots.txt.  By convention, bots and spiders usually have the name 'bot' somewhere in their user agent strings. 
+should respond to "googlebot" in robots.txt.  By convention, bots and spiders usually have the name 'bot' somewhere in their user agent strings.  You can also pass the response code of the request that fetched the robots.txt file if you like, and let the exclusion parser decide what to do with it:
+
+```ruby
+require 'open-uri'
+
+status = 0
+data = open('http://wikipedia.org/robots.txt') { |f| status = f.status }
+mybot.robot_txt = Spider::ExclusionParser.new(data.read, 'mybot', status)
+```
 
 Finally, as a sanity check / to avoid DoS honeypots with malicious robots.txt files, the exclusion parser will process a maximum of one thousand non-whitespace lines before stopping. 
 
@@ -199,8 +209,16 @@ Spider::VisitRecorder.record!
 mybot.visit_each do |url|
 
   data = Spider::VisitRecorder.recall(url) do
+    text = ''
     puts "fetch #{url}"
-    open(url).read
+    open(url) do |f|
+      text = f.read
+      # doing this is only necessary if you want to
+      # save this information in the recording
+      text.http_status = f.status.first.to_i
+    end
+
+    text
   end
  
   # extract links from data and push onto the

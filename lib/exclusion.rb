@@ -25,13 +25,13 @@ module Spider
     MAX_DIRECTIVES = 1000
     NULL_MATCH = "*!*"
   
-    def initialize(text, agent=nil)
+    def initialize(text, agent=nil, status=200)
       @skip_list = []
       @agent_key = agent
   
       return if text.nil? || text.length.zero?
   
-      if [401, 403].include? text.http_status
+      if [401, 403].include? status
         @skip_list << [NULL_MATCH, true]
         return
       end
@@ -97,7 +97,7 @@ module Spider
   
     # Top level file parsing method - makes sure carriage returns work,
     # strips out any BOM, then loops through each line and opens up a new
-    # array of directives in the hash if a user-agent directive is found
+    # array of directives in the hash if a user-agent directive is found.
   
     def parse_text(text)
       current_key = ""
@@ -115,12 +115,21 @@ module Spider
         if line.length.nonzero? && line =~ /[^\s]/
   
           if line =~ /User-agent:\s+(.+)/i
+            previous_key = current_key
             current_key = $1.downcase
             config[current_key] = [] unless config[current_key]
-            next
+
+            # If we've seen a new user-agent directive and the previous
+            # one is empty then we have a cascading user-agent string.
+            # copy the new user agent array ref so both user agents are identical.
+
+	    if(config.has_key?(previous_key) && config[previous_key].size.zero?)
+              config[previous_key] = config[current_key]
+            end
+
+          else
+            config[current_key] << line
           end
-  
-          config[current_key] << line
         end
       end
   

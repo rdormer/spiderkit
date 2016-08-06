@@ -126,12 +126,10 @@ module Spider
           allow: /
         eos
 
-        txt.http_status = 401
-        @bottxt = described_class.new(txt)
+        @bottxt = described_class.new(txt, nil, 401)
         expect(@bottxt.excluded?('/')).to be true
 
-        txt.http_status = 403
-        @bottxt = described_class.new(txt)
+        @bottxt = described_class.new(txt, nil, 403)
         expect(@bottxt.excluded?('/')).to be true
       end
     end
@@ -243,7 +241,53 @@ module Spider
         expect(@bottxt.excluded?('/')).to be true
       end
 
-      xit "should allow cascading user-agent strings"
+      it "should use default agent if passed nil agent string" do
+        txt = <<-eos
+          user-agent: testbot
+          disallow: / 
+
+          user-agent: *
+          disallow: 
+        eos
+
+        @bottxt = described_class.new(txt, nil)
+        expect(@bottxt.excluded?('/')).to be false
+      end
+
+      it "should use default agent if passed blank agent string" do
+        txt = <<-eos
+          user-agent: testbot
+          disallow: / 
+
+          user-agent: *
+          disallow: 
+        eos
+
+        @bottxt = described_class.new(txt, '')
+        expect(@bottxt.excluded?('/')).to be false
+      end
+
+      it "should allow cascading user-agent strings" do
+        txt = <<-eos
+          user-agent: agentfirst
+          user-agent: agentlast
+          disallow: /test_dir
+          allow: /other_test_dir
+        eos
+
+        bottxt_first = described_class.new(txt, 'agentfirst')
+        bottxt_last = described_class.new(txt, 'agentlast')
+
+        expect(bottxt_first.excluded?('/test_dir')).to be true
+        expect(bottxt_last.excluded?('/test_dir')).to be true
+        expect(bottxt_first.allowed?('/test_dir')).to be false
+        expect(bottxt_last.allowed?('/test_dir')).to be false
+
+        expect(bottxt_first.excluded?('/other_test_dir')).to be false
+        expect(bottxt_last.excluded?('/other_test_dir')).to be false
+        expect(bottxt_first.allowed?('/other_test_dir')).to be true
+        expect(bottxt_last.allowed?('/other_test_dir')).to be true
+      end
     end
 
     describe "Disallow directive" do
