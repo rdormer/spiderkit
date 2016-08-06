@@ -3,14 +3,15 @@
 # License::   MIT
 
 #==============================================
-# Class for saving visited URIs as YAML-ized files with response codes and headers.
-# Takes the network request code as a block, hashes the URI to get a file name, and
-# then creates it and saves it if it's not present, or reads and returns the contents
-# if it is.  Since the data returned from the file is an exact copy of what the block
-# returned for that URI, it's a constant, deterministic recording that is highly useful
-# for integration tests and the like.  Yes, you can use VCR if that's your thing, but
-# I found it difficult to integrate with real-world crawlers.  This is a lightweight
-# wrapper to give you 90% of the same thing.
+# Class for saving visited URIs as YAML-ized files with response codes and
+# headers. Takes the network request code as a block, hashes the URI to get
+# a file name, and then creates it and saves it if it's not present, or reads
+# and returns the contents if it is.  Since the data returned from the file
+# is an exact copy of what the block returned for that URI, it's a constant,
+# deterministic recording that is highly useful for integration tests and the
+# like.  Yes, you can use VCR if that's your thing, but I found it difficult
+# to integrate with real-world crawlers.  This is a lightweight wrapper to
+# give you 90% of the same thing.
 #==============================================
 require 'digest'
 require 'base64'
@@ -50,9 +51,9 @@ module Spider
 
         store = locate_file(url)
 
-        if(store.size == 0)
+        if store.size == 0
           raise "Unexpected request: #{url}" unless @@recording
-          data = yield *args if block_given?
+          data = yield(*args) if block_given?
 
           begin
             store.write(package(url, data))
@@ -68,7 +69,7 @@ module Spider
         return data
 
       elsif block_given?
-        yield *args
+        yield(*args)
       end
     end
 

@@ -2,7 +2,7 @@
 # Copyright:: Copyright (c) 2016 Robert Dormer
 # License::   MIT
 
-$: << File.dirname(__FILE__)
+$LOAD_PATH << File.dirname(__FILE__)
 require 'wait_time'
 require 'exclusion'
 require 'recorder'

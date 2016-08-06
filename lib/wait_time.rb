@@ -3,33 +3,32 @@
 # License::   MIT
 
 #==============================================
-#Class to encapsulate the crawl delay being used.
-#Clamps the value to a maximum amount and implements
-#an exponential backoff function for responding to
-#rate limit requests
+# Class to encapsulate the crawl delay being used.
+# Clamps the value to a maximum amount and implements
+# an exponential backoff function for responding to
+# rate limit requests
 #==============================================
 
 module Spider
-
   class WaitTime
-    
+
     MAX_WAIT = 180
     DEFAULT_WAIT = 2
     REDUCE_WAIT = 300
 
-    def initialize(period=nil)
-      unless period.nil?
-        @wait = (period > MAX_WAIT ? MAX_WAIT : period)
-      else
+    def initialize(period = nil)
+      if period.nil?
         @wait = DEFAULT_WAIT
+      else
+        @wait = (period > MAX_WAIT ? MAX_WAIT : period)
       end
     end
 
     def back_off
       if @wait.zero?
-        @wait = DEFAULT_WAIT 
+        @wait = DEFAULT_WAIT
       else
-        waitval = @wait * 2 
+        waitval = @wait * 2
         @wait = (waitval > MAX_WAIT ? MAX_WAIT : waitval)
       end
     end
@@ -42,7 +41,7 @@ module Spider
       sleep(REDUCE_WAIT)
       back_off
     end
- 
+
     def value
       @wait
     end

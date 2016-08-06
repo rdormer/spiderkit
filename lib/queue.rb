@@ -6,49 +6,47 @@ require 'bloom-filter'
 require 'exclusion'
 
 module Spider
-
   class VisitQueue
- 
+
     IterationExit = Class.new(Exception)
-   
+
     attr_accessor :visit_count
     attr_accessor :robot_txt
 
-    def initialize(robots=nil, agent=nil, finish=nil)
+    def initialize(robots = nil, agent = nil, finish = nil)
       @robot_txt = ExclusionParser.new(robots, agent) if robots
       @finalize = finish
       @visit_count = 0
       clear_visited
       @pending = []
-    end 
+    end
 
     def visit_each
       begin
         until @pending.empty?
           url = @pending.pop
-          if url_okay(url) 
-            yield url.clone if block_given?
-            @visited.insert(url)
-            @visit_count += 1
-          end
-        end 
+          next unless url_okay(url)
+          yield url.clone if block_given?
+          @visited.insert(url)
+          @visit_count += 1
+        end
       rescue IterationExit
       end
-  
+
       @finalize.call if @finalize
-    end 
-    
+    end
+
     def push_front(urls)
-      add_url(urls) {|u| @pending.push(u)}
-    end 
-  
+      add_url(urls) { |u| @pending.push(u) }
+    end
+
     def push_back(urls)
-      add_url(urls) {|u| @pending.unshift(u)}
-    end 
+      add_url(urls) { |u| @pending.unshift(u) }
+    end
 
     def mark(urls)
       urls = [urls] unless urls.is_a? Array
-      urls.each {|u| @visited.insert(u)}
+      urls.each { |u| @visited.insert(u) }
     end
 
     def size
@@ -66,23 +64,21 @@ module Spider
     def clear_visited
       @visited = BloomFilter.new(size: 10_000, error_rate: 0.001)
     end
-  
+
     def url_okay(url)
       return false if @visited.include?(url)
       return false if @robot_txt && @robot_txt.excluded?(url)
       true
     end
-  
+
     private
 
     def add_url(urls)
       urls = [urls] unless urls.is_a? Array
       urls.compact!
-  
+
       urls.each do |url|
-        unless @visited.include?(url) || @pending.include?(url)
-          yield url
-        end 
+        yield url unless @visited.include?(url) || @pending.include?(url)
       end
     end
   end
