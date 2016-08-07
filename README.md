@@ -44,13 +44,14 @@ Since you need to implement page fetching on your own (using any of a number of 
 A basic example:
 
 ```ruby
+require 'open-uri'
+
 mybot = Spider::VisitQueue.new
 mybot.push_front('http://someurl.com')
 
 mybot.visit_each do |url|
-  #fetch the url
+  data = open(url).read
   #pull out the links as linklist
-  
   mybot.push_back(linklist)
 end
 ```
@@ -104,7 +105,9 @@ The finalizer, if any, will still be executed after stopping iteration.
 Spiderkit also includes a robots.txt parser that can either work standalone, or be passed as an argument to the visit queue.  If passed as an argument, urls that are excluded by the robots.txt will be dropped transparently.
 
 ```
-# fetch robots.txt as variable txt
+require 'open-uri'
+
+txt = open('http://somesite.com/robots.txt').read
 
 # create a stand alone parser
 robots_txt = Spider::ExclusionParser.new(txt)
@@ -150,9 +153,8 @@ should respond to "googlebot" in robots.txt.  By convention, bots and spiders us
 ```ruby
 require 'open-uri'
 
-status = 0
-data = open('http://wikipedia.org/robots.txt') { |f| status = f.status }
-mybot.robot_txt = Spider::ExclusionParser.new(data.read, 'mybot', status)
+data = open('http://wikipedia.org/robots.txt')
+mybot.robot_txt = Spider::ExclusionParser.new(data.read, 'mybot', data.status)
 ```
 
 Finally, as a sanity check / to avoid DoS honeypots with malicious robots.txt files, the exclusion parser will process a maximum of one thousand non-whitespace lines before stopping. 
@@ -164,7 +166,10 @@ Ideally a bot should wait for some period of time in between requests to avoid c
 You can create it standalone, or get it from an exclusion parser:
 
 ```ruby
+require 'open-uri'
+
 # download a robots.txt with a crawl-delay 40
+txt = open('http://crawldelay40seconds.com/robots.txt').read
 
 robots_txt = Spider::ExclusionParser.new(txt)
 delay = robots_txt.wait_time
@@ -209,14 +214,14 @@ Spider::VisitRecorder.record!
 mybot.visit_each do |url|
 
   data = Spider::VisitRecorder.recall(url) do
-    text = ''
     puts "fetch #{url}"
-    open(url) do |f|
-      text = f.read
-      # doing this is only necessary if you want to
-      # save this information in the recording
-      text.http_status = f.status.first.to_i
-    end
+
+    data = open(url)
+    text = data.read
+
+    # doing this is only necessary if you want to
+    # save this information in the recording
+    text.http_status = data.status.first.to_i
 
     text
   end
