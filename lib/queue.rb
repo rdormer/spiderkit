@@ -2,7 +2,7 @@
 # Copyright:: Copyright (c) 2016 Robert Dormer
 # License::   MIT
 
-require 'bloom-filter'
+require 'bloomer'
 require 'exclusion'
 
 module Spider
@@ -27,7 +27,7 @@ module Spider
           url = @pending.pop
           next unless url_okay(url)
           yield url.clone if block_given?
-          @visited.insert(url)
+          @visited.add(url)
           @visit_count += 1
         end
       rescue IterationExit
@@ -46,7 +46,7 @@ module Spider
 
     def mark(urls)
       urls = [urls] unless urls.is_a? Array
-      urls.each { |u| @visited.insert(u) }
+      urls.each { |u| @visited.add(u) }
     end
 
     def size
@@ -62,7 +62,7 @@ module Spider
     end
 
     def clear_visited
-      @visited = BloomFilter.new(size: 10_000, error_rate: 0.001)
+      @visited =  Bloomer.new(10_000, 0.001)
     end
 
     def url_okay(url)

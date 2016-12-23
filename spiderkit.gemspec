@@ -23,5 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec",  "~> 3.4.0"
   spec.add_development_dependency "rake"
 
-  spec.add_dependency "bloom-filter", "~> 0.2.0"
+  spec.add_dependency "bloomer", "~> 0.0.5"
 end
