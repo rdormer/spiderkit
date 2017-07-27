@@ -35,9 +35,9 @@ Using Spiderkit, you implement your spiders and bots around the idea of a visit 
 * You can add any kind of object you like
 * You can add more objects to the queue as you iterate through it
 * Once an object is iterated over, it's removed from the queue
-* Once an object is iterated over, it's string value is added to an already-visited list, at which point you can't add it again.
+* Once an object is iterated over, its string value is added to an already-visited list, at which point you can't add it again.
 * The queue will stop once it's empty, and optionally execute a final Proc that you pass to it
-* The queue will not fetch web pages or anything else on it's own - that's part of what *you* implement.  
+* The queue will not fetch web pages or anything else on its own - that's part of what *you* implement.
 
 Since you need to implement page fetching on your own (using any of a number of high quality gems or libararies), you'll also need to implement the associated error checking, network timeout handling, and sanity checking that's involved.  If you handle redirects by pushing them onto the queue, however, then you'll at least get a little help where redirect loops are concerned.
 
@@ -131,7 +131,7 @@ mybot.visit_each |url|
 end
 ``` 
 
-If you don't pass an agent string, then the parser will take it's configuration from the default agent specified in the robots.txt.  If you want your bot to respond to directives for a given user agent, just pass the agent to either the queue when you create it, or the parser:
+If you don't pass an agent string, then the parser will take its configuration from the default agent specified in the robots.txt.  If you want your bot to respond to directives for a given user agent, just pass the agent to either the queue when you create it, or the parser:
 
 ```ruby
 # visit queue that will respond to any robots.txt

@@ -43,7 +43,7 @@ module Spider
     end
 
     # Check to see if the given url is matched by any rule
-    # in the file, and return it's associated status
+    # in the file, and return its associated status
 
     def excluded?(url)
       url = safe_unescape(url)
@@ -62,7 +62,7 @@ module Spider
     private
 
     # Method to process the list of directives for a given user agent.
-    # Picks the one that applies to us, and then processes it's directives
+    # Picks the one that applies to us, and then processes its directives
     # into the skip list by splitting the strings and taking the appropriate
     # action. Stops after a set number of directives to avoid malformed files
     # or denial of service attacks
